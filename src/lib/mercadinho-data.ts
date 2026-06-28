@@ -7,6 +7,17 @@ import heinekenImg from "@/assets/products/heineken.jpg";
 import tomateImg from "@/assets/products/tomate.jpg";
 import arrozImg from "@/assets/products/arroz.jpg";
 
+import bannerHortifruti from "@/assets/banners/hortifruti.jpg";
+import bannerCerveja from "@/assets/banners/cerveja.jpg";
+import bannerPadaria from "@/assets/banners/padaria.jpg";
+
+import catTodos from "@/assets/categories/todos.jpg";
+import catHortifruti from "@/assets/categories/hortifruti.jpg";
+import catPadaria from "@/assets/categories/padaria.jpg";
+import catAcougue from "@/assets/categories/acougue.jpg";
+import catBebidas from "@/assets/categories/bebidas.jpg";
+import catMercearia from "@/assets/categories/mercearia.jpg";
+
 export type Category = "Hortifrúti" | "Padaria" | "Açougue" | "Bebidas" | "Mercearia";
 
 export interface Product {
@@ -46,27 +57,26 @@ export const REVIEWS = [
   },
 ];
 
+export const ALL_CATEGORY_IMAGE = catTodos;
+
 export const BANNERS = [
   {
     id: "b1",
     title: "Quarta do Hortifrúti",
     subtitle: "Frutas, legumes e verduras com até 40% OFF",
-    emoji: "🥬",
-    gradient: "from-emerald-500 to-green-600",
+    image: bannerHortifruti,
   },
   {
     id: "b2",
-    title: "Cerveja Trincando 🍺",
-    subtitle: "Pack gelado pro fim de semana com preço de amigo",
-    emoji: "🍻",
-    gradient: "from-amber-500 to-orange-600",
+    title: "Cerveja Sempre Gelada",
+    subtitle: "Pack pro fim de semana com preço de amigo",
+    image: bannerCerveja,
   },
   {
     id: "b3",
     title: "Pão Quentinho Toda Manhã",
     subtitle: "Padaria fresca a partir das 6h30",
-    emoji: "🥖",
-    gradient: "from-rose-500 to-red-600",
+    image: bannerPadaria,
   },
 ];
 
@@ -81,12 +91,12 @@ export const INITIAL_PRODUCTS: Product[] = [
   { id: "p8", name: "Arroz Branco 5kg", category: "Mercearia", oldPrice: 32.9, newPrice: 24.9, image: arrozImg },
 ];
 
-export const CATEGORIES: { name: Category; emoji: string }[] = [
-  { name: "Hortifrúti", emoji: "🥬" },
-  { name: "Padaria", emoji: "🥖" },
-  { name: "Açougue", emoji: "🥩" },
-  { name: "Bebidas", emoji: "🍺" },
-  { name: "Mercearia", emoji: "🛒" },
+export const CATEGORIES: { name: Category; image: string }[] = [
+  { name: "Hortifrúti", image: catHortifruti },
+  { name: "Padaria", image: catPadaria },
+  { name: "Açougue", image: catAcougue },
+  { name: "Bebidas", image: catBebidas },
+  { name: "Mercearia", image: catMercearia },
 ];
 
 export const formatBRL = (v: number) =>

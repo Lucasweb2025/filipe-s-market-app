@@ -1,29 +1,48 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { PublicPage } from "@/components/mercadinho/PublicPage";
+import { AdminPanel } from "@/components/mercadinho/AdminPanel";
+import { INITIAL_PRODUCTS, type Product } from "@/lib/mercadinho-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Mercadinho Filipe — Jardim São Roque, SP" },
+      {
+        name: "description",
+        content:
+          "Mercadinho de bairro no Jardim São Roque com hortifrúti fresquinho, padaria, açougue, bebidas geladas e atendimento que é a cara da vizinhança.",
+      },
+      { property: "og:title", content: "Mercadinho Filipe" },
+      {
+        property: "og:description",
+        content: "Ofertas da semana e pedidos direto pelo WhatsApp.",
+      },
     ],
   }),
-  component: Index,
+  component: App,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+function App() {
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [view, setView] = useState<"public" | "admin">("public");
+
+  const addProduct = (p: Omit<Product, "id">) =>
+    setProducts((prev) => [{ ...p, id: `p${Date.now()}` }, ...prev]);
+
+  const deleteProduct = (id: string) =>
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+
+  if (view === "admin") {
+    return (
+      <AdminPanel
+        products={products}
+        onAdd={addProduct}
+        onDelete={deleteProduct}
+        onBack={() => setView("public")}
       />
-    </div>
-  );
+    );
+  }
+
+  return <PublicPage products={products} onAdminClick={() => setView("admin")} />;
 }

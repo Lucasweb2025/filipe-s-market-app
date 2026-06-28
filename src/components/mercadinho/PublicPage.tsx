@@ -57,10 +57,16 @@ export function PublicPage({ products, onAdminClick }: Props) {
             {BANNERS.map((b) => (
               <div
                 key={b.id}
-                className={`relative flex h-44 w-[85%] shrink-0 snap-start flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br ${b.gradient} p-6 text-white shadow-card sm:w-[60%] md:w-[45%]`}
+                className="relative flex h-52 w-[85%] shrink-0 snap-start flex-col justify-end overflow-hidden rounded-3xl shadow-card sm:w-[60%] md:w-[45%]"
               >
-                <span className="text-5xl">{b.emoji}</span>
-                <div>
+                <img
+                  src={b.image}
+                  alt={b.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="relative p-6 text-white">
                   <h3 className="text-xl font-bold leading-tight">{b.title}</h3>
                   <p className="mt-1 text-sm text-white/90">{b.subtitle}</p>
                 </div>
@@ -74,7 +80,7 @@ export function PublicPage({ products, onAdminClick }: Props) {
           <h2 className="mb-4 text-lg font-bold tracking-tight">Categorias</h2>
           <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <CategoryButton
-              emoji="✨"
+              image={ALL_CATEGORY_IMAGE}
               label="Todos"
               active={activeCat === null}
               onClick={() => setActiveCat(null)}
@@ -82,7 +88,7 @@ export function PublicPage({ products, onAdminClick }: Props) {
             {CATEGORIES.map((c) => (
               <CategoryButton
                 key={c.name}
-                emoji={c.emoji}
+                image={c.image}
                 label={c.name}
                 active={activeCat === c.name}
                 onClick={() => setActiveCat(c.name)}
@@ -189,12 +195,12 @@ export function PublicPage({ products, onAdminClick }: Props) {
 }
 
 function CategoryButton({
-  emoji,
+  image,
   label,
   active,
   onClick,
 }: {
-  emoji: string;
+  image: string;
   label: string;
   active: boolean;
   onClick: () => void;
@@ -202,13 +208,11 @@ function CategoryButton({
   return (
     <button onClick={onClick} className="flex shrink-0 flex-col items-center gap-2">
       <span
-        className={`grid h-20 w-20 place-items-center rounded-full text-3xl shadow-soft transition ${
-          active
-            ? "bg-gradient-primary text-primary-foreground shadow-glow scale-105"
-            : "bg-card hover:bg-secondary"
+        className={`relative grid h-20 w-20 place-items-center overflow-hidden rounded-full shadow-soft transition ${
+          active ? "ring-4 ring-primary shadow-glow scale-105" : "ring-1 ring-border"
         }`}
       >
-        {emoji}
+        <img src={image} alt={label} className="h-full w-full object-cover" loading="lazy" />
       </span>
       <span className={`text-xs font-medium ${active ? "text-primary" : "text-muted-foreground"}`}>
         {label}

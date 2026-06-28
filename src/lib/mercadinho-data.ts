@@ -1,3 +1,12 @@
+import cocaImg from "@/assets/products/coca-2l.jpg";
+import bananaImg from "@/assets/products/banana.jpg";
+import leiteImg from "@/assets/products/leite.jpg";
+import paoImg from "@/assets/products/pao.jpg";
+import picanhaImg from "@/assets/products/picanha.jpg";
+import heinekenImg from "@/assets/products/heineken.jpg";
+import tomateImg from "@/assets/products/tomate.jpg";
+import arrozImg from "@/assets/products/arroz.jpg";
+
 export type Category = "Hortifrúti" | "Padaria" | "Açougue" | "Bebidas" | "Mercearia";
 
 export interface Product {
@@ -62,70 +71,14 @@ export const BANNERS = [
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
-  {
-    id: "p1",
-    name: "Coca-Cola 2L",
-    category: "Bebidas",
-    oldPrice: 12.9,
-    newPrice: 8.99,
-    image: "https://images.unsplash.com/photo-1554866585-cd94860890b7?w=600&q=80",
-  },
-  {
-    id: "p2",
-    name: "Banana Nanica (kg)",
-    category: "Hortifrúti",
-    oldPrice: 6.49,
-    newPrice: 3.99,
-    image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=600&q=80",
-  },
-  {
-    id: "p3",
-    name: "Leite Integral 1L",
-    category: "Mercearia",
-    oldPrice: 5.49,
-    newPrice: 3.89,
-    image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&q=80",
-  },
-  {
-    id: "p4",
-    name: "Pão Francês (kg)",
-    category: "Padaria",
-    oldPrice: 18.9,
-    newPrice: 13.9,
-    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80",
-  },
-  {
-    id: "p5",
-    name: "Picanha Bovina (kg)",
-    category: "Açougue",
-    oldPrice: 89.9,
-    newPrice: 69.9,
-    image: "https://images.unsplash.com/photo-1558030006-450675393462?w=600&q=80",
-  },
-  {
-    id: "p6",
-    name: "Cerveja Heineken Long Neck",
-    category: "Bebidas",
-    oldPrice: 7.99,
-    newPrice: 4.99,
-    image: "https://images.unsplash.com/photo-1608270586620-248524c67de9?w=600&q=80",
-  },
-  {
-    id: "p7",
-    name: "Tomate Italiano (kg)",
-    category: "Hortifrúti",
-    oldPrice: 9.9,
-    newPrice: 6.49,
-    image: "https://images.unsplash.com/photo-1546470427-e26264be0b0d?w=600&q=80",
-  },
-  {
-    id: "p8",
-    name: "Arroz Tio João 5kg",
-    category: "Mercearia",
-    oldPrice: 32.9,
-    newPrice: 24.9,
-    image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&q=80",
-  },
+  { id: "p1", name: "Refrigerante Cola 2L", category: "Bebidas", oldPrice: 12.9, newPrice: 8.99, image: cocaImg },
+  { id: "p2", name: "Banana Nanica (kg)", category: "Hortifrúti", oldPrice: 6.49, newPrice: 3.99, image: bananaImg },
+  { id: "p3", name: "Leite Integral 1L", category: "Mercearia", oldPrice: 5.49, newPrice: 3.89, image: leiteImg },
+  { id: "p4", name: "Pão Francês (kg)", category: "Padaria", oldPrice: 18.9, newPrice: 13.9, image: paoImg },
+  { id: "p5", name: "Picanha Bovina (kg)", category: "Açougue", oldPrice: 89.9, newPrice: 69.9, image: picanhaImg },
+  { id: "p6", name: "Cerveja Long Neck 355ml", category: "Bebidas", oldPrice: 7.99, newPrice: 4.99, image: heinekenImg },
+  { id: "p7", name: "Tomate Italiano (kg)", category: "Hortifrúti", oldPrice: 9.9, newPrice: 6.49, image: tomateImg },
+  { id: "p8", name: "Arroz Branco 5kg", category: "Mercearia", oldPrice: 32.9, newPrice: 24.9, image: arrozImg },
 ];
 
 export const CATEGORIES: { name: Category; emoji: string }[] = [

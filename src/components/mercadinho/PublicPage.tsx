@@ -1,6 +1,7 @@
 import { Search, Lock, MapPin, Phone, Clock, Star, MessageCircle, Flame, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import {
+  ALL_CATEGORY_IMAGE,
   BANNERS,
   CATEGORIES,
   REVIEWS,

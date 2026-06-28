@@ -191,7 +191,7 @@ function Dashboard({
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c.name} value={c.name}>
-                      {c.emoji} {c.name}
+                      {c.name}
                     </option>
                   ))}
                 </select>

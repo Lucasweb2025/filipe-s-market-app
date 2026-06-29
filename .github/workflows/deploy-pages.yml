@@ -25,7 +25,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
 
       - name: Build static site for GitHub Pages
         run: npm run build:pages
@@ -34,6 +34,9 @@ jobs:
 
       - name: SPA fallback for GitHub Pages
         run: cp dist/client/index.html dist/client/404.html
+
+      - name: Disable Jekyll on GitHub Pages
+        run: touch dist/client/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

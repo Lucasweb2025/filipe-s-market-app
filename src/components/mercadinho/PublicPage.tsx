@@ -6,12 +6,12 @@ import {
   Clock,
   Star,
   MessageCircle,
-  ShoppingBag,
-  Home,
-  ClipboardList,
 } from "lucide-react";
 import { useState } from "react";
+import { BrandLogo } from "@/components/mercadinho/BrandLogo";
 import { CartSheet } from "@/components/mercadinho/CartSheet";
+import { InstallPwaBanner } from "@/components/mercadinho/InstallPwaBanner";
+import { MobileBottomNav } from "@/components/mercadinho/MobileBottomNav";
 import { ProductCard, ProductCardSkeleton } from "@/components/mercadinho/ProductCard";
 import { STORE } from "@/config/store";
 import { ALL_CATEGORY_IMAGE, BANNERS, CATEGORIES, REVIEWS } from "@/data/catalog";
@@ -33,26 +33,24 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
   const filtered = activeCat ? products.filter((product) => product.category === activeCat) : products;
 
   return (
-    <div className="min-h-screen bg-background pb-28">
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4 sm:px-6">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-primary shadow-glow">
-            <ShoppingBag className="h-5 w-5 text-primary-foreground" />
-          </div>
+    <div className="min-h-[100dvh] bg-background pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <BrandLogo size="md" className="rounded-xl bg-white/80 p-1 shadow-soft" />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-base font-bold tracking-tight sm:text-lg">{STORE.name}</h1>
-            <p className="truncate text-xs text-muted-foreground">Jardim São Roque · SP</p>
+            <h1 className="truncate text-sm font-bold tracking-tight sm:text-lg">{STORE.name}</h1>
+            <p className="truncate text-[11px] text-muted-foreground sm:text-xs">Jardim São Roque · SP</p>
           </div>
           <button
             onClick={onAdminClick}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-border bg-card text-muted-foreground transition hover:bg-muted"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-border bg-card text-muted-foreground transition hover:bg-muted touch-manipulation"
             aria-label="Acesso restrito"
           >
             <Lock className="h-4 w-4" />
           </button>
         </div>
-        <div className="mx-auto max-w-6xl px-4 pb-4 sm:px-6">
-          <div className="flex items-center gap-3 rounded-2xl bg-input px-4 py-3.5 text-muted-foreground">
+        <div className="mx-auto max-w-6xl px-4 pb-3 sm:px-6 sm:pb-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-input px-4 py-3 text-muted-foreground">
             <Search className="h-4 w-4 shrink-0" />
             <span className="truncate text-sm">Busque no mercadinho...</span>
           </div>
@@ -65,7 +63,7 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
             {BANNERS.map((banner) => (
               <div
                 key={banner.id}
-                className="relative flex h-52 w-[85%] shrink-0 snap-start flex-col justify-end overflow-hidden rounded-3xl shadow-card sm:w-[60%] md:w-[45%]"
+                className="relative flex h-44 w-[88%] shrink-0 snap-start flex-col justify-end overflow-hidden rounded-3xl shadow-card sm:h-52 sm:w-[60%] md:w-[45%]"
               >
                 <img
                   src={banner.image}
@@ -194,41 +192,21 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
           </div>
         </section>
 
-        <footer className="mt-16 border-t border-border pt-8 pb-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {STORE.name}. Delivery pelo site, atendimento no Jardim São Roque.
+        <footer className="mt-16 flex flex-col items-center gap-3 border-t border-border pt-8 pb-4 text-center text-xs text-muted-foreground">
+          <BrandLogo size="lg" />
+          <p>© {new Date().getFullYear()} {STORE.name}. Delivery pelo site, atendimento no Jardim São Roque.</p>
         </footer>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 px-4 py-3 sm:px-6">
-          <button
-            type="button"
-            className="inline-flex flex-col items-center gap-1 text-xs font-semibold text-primary"
-          >
-            <Home className="h-5 w-5" />
-            Início
-          </button>
-          <button
-            type="button"
-            onClick={() => setCartOpen(true)}
-            className="relative inline-flex flex-col items-center gap-1 text-xs font-semibold text-muted-foreground transition hover:text-primary"
-          >
-            <ClipboardList className="h-5 w-5" />
-            Pedidos
-            {cart.itemCount > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                {cart.itemCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </nav>
+      <InstallPwaBanner />
+
+      <MobileBottomNav cartItemCount={cart.itemCount} onOpenCart={() => setCartOpen(true)} />
 
       <a
         href={whatsappContactUrl()}
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-24 right-6 z-40 grid h-14 w-14 place-items-center rounded-full bg-success text-success-foreground shadow-glow transition hover:scale-105"
+        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-40 grid h-14 w-14 place-items-center rounded-full bg-success text-success-foreground shadow-glow transition hover:scale-105 touch-manipulation sm:right-6"
         aria-label="Falar no WhatsApp"
       >
         <MessageCircle className="h-6 w-6" />

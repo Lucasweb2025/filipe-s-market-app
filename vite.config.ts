@@ -5,17 +5,54 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { VitePWA } from "vite-plugin-pwa";
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
+const base = isGitHubPages ? "/filipe-s-market-app/" : "/";
 
 export default defineConfig({
   vite: {
-    base: isGitHubPages ? "/filipe-s-market-app/" : "/",
+    base,
   },
+  plugins: [
+    VitePWA({
+      registerType: "autoUpdate",
+      injectRegister: false,
+      includeAssets: ["logo.png", "apple-touch-icon.png", "sw.js"],
+      manifest: {
+        name: "Mercadinho do Leblon",
+        short_name: "Leblon",
+        description: "Ofertas da semana e pedidos de delivery pelo WhatsApp.",
+        theme_color: "#2f6f3f",
+        background_color: "#fafaf8",
+        display: "standalone",
+        orientation: "portrait-primary",
+        lang: "pt-BR",
+        scope: base,
+        start_url: base,
+        icons: [
+          {
+            src: `${base}logo.png`,
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: `${base}logo.png`,
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff2}"],
+        navigateFallback: `${base}index.html`,
+      },
+    }),
+  ],
   nitro: isGitHubPages ? false : true,
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
     ...(isGitHubPages && {
       prerender: {

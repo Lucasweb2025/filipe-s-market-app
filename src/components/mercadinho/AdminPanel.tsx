@@ -12,6 +12,7 @@ import {
   type CompressedImage,
 } from "@/services/image-compression";
 import { formatBRL } from "@/services/whatsapp";
+import { BrandLogo } from "@/components/mercadinho/BrandLogo";
 import { STORE } from "@/config/store";
 
 interface Props {
@@ -44,7 +45,7 @@ function LoginScreen({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
   const [password, setPassword] = useState("");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface px-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-surface px-4 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]">
       <div className="w-full max-w-sm">
         <button
           onClick={onBack}
@@ -54,9 +55,7 @@ function LoginScreen({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
         </button>
         <div className="rounded-3xl bg-card p-8 shadow-card">
           <div className="mb-6 flex flex-col items-center text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-3xl bg-gradient-primary shadow-glow">
-              <Lock className="h-6 w-6 text-primary-foreground" />
-            </div>
+            <BrandLogo size="xl" className="rounded-2xl bg-white p-2 shadow-soft" />
             <h1 className="mt-4 text-xl font-bold tracking-tight">Acesso Restrito</h1>
             <p className="mt-1 text-sm text-muted-foreground">{STORE.name}</p>
           </div>
@@ -221,16 +220,17 @@ function Dashboard({
   };
 
   return (
-    <div className="min-h-screen bg-surface pb-16">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 sm:px-6">
+    <div className="min-h-[100dvh] bg-surface pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto grid max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-4 sm:px-6">
+          <BrandLogo size="sm" className="rounded-lg bg-white p-0.5 shadow-soft" />
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Painel administrativo</p>
             <h1 className="truncate text-lg font-bold tracking-tight">Gestão da loja 👋</h1>
           </div>
           <button
             onClick={onLogout}
-            className="inline-flex shrink-0 items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
+            className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted touch-manipulation"
           >
             <LogOut className="h-4 w-4" /> Sair
           </button>

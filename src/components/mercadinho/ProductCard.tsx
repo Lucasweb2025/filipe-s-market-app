@@ -32,11 +32,11 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           <p className="text-xs text-muted-foreground line-through">{formatBRL(product.oldPrice)}</p>
           <p className="text-xl font-bold text-primary">{formatBRL(product.newPrice)}</p>
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-2">
           <button
             type="button"
             onClick={() => onAddToCart(product)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-primary px-3 py-2.5 text-xs font-semibold text-primary-foreground shadow-soft transition hover:opacity-90"
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-primary px-3 py-2.5 text-xs font-semibold text-primary-foreground shadow-soft transition hover:opacity-90 touch-manipulation"
           >
             <Plus className="h-4 w-4" /> Carrinho
           </button>
@@ -44,7 +44,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             href={whatsappProductUrl(product.name, product.newPrice)}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-success px-3 py-2.5 text-xs font-semibold text-success-foreground shadow-soft transition hover:opacity-90"
+            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-success px-3 py-2.5 text-xs font-semibold text-success-foreground shadow-soft transition hover:opacity-90 touch-manipulation"
           >
             <MessageCircle className="h-4 w-4" /> WhatsApp
           </a>

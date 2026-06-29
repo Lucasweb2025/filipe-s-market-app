@@ -10,6 +10,8 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { BRAND } from "@/config/brand";
+import { PwaRegister } from "@/components/PwaRegister";
 import { reportClientError } from "../lib/error-reporting";
 import { STORE } from "@/config/store";
 
@@ -77,12 +79,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
       { title: STORE.name },
       {
         name: "description",
-        content: "Ofertas da semana e pedidos de delivery direto pelo WhatsApp.",
+        content: BRAND.description,
       },
+      { name: "theme-color", content: BRAND.themeColor },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: BRAND.shortName },
       { property: "og:title", content: STORE.name },
       {
         property: "og:description",
@@ -95,6 +105,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "manifest",
+        href: `${import.meta.env.BASE_URL}manifest.webmanifest`,
+      },
+      {
+        rel: "apple-touch-icon",
+        href: `${import.meta.env.BASE_URL}apple-touch-icon.png`,
       },
     ],
   }),
@@ -123,6 +141,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PwaRegister />
       <Outlet />
     </QueryClientProvider>
   );

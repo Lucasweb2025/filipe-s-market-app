@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { BRAND } from "@/config/brand";
 import { PwaRegister } from "@/components/PwaRegister";
+import { Toaster } from "@/components/ui/sonner";
 import { reportClientError } from "../lib/error-reporting";
 import { STORE } from "@/config/store";
 
@@ -143,6 +144,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <PwaRegister />
       <Outlet />
+      <Toaster position="bottom-center" offset={88} richColors closeButton />
     </QueryClientProvider>
   );
 }

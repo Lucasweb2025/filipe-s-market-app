@@ -107,14 +107,11 @@ export function CartSheet({ open, onOpenChange, cart }: CartSheetProps) {
                   href={whatsappCartUrl(items)}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={() => {
-                    clearCart();
-                    onOpenChange(false);
-                  }}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-success px-6 py-4 text-sm font-semibold text-success-foreground shadow-glow transition hover:opacity-95"
+                  onClick={() => onOpenChange(false)}
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-success px-6 py-4 text-sm font-semibold text-success-foreground shadow-glow transition hover:opacity-95 touch-manipulation"
                 >
                   <MessageCircle className="h-5 w-5" />
-                  Enviar pedido no WhatsApp
+                  Finalizar no WhatsApp
                 </a>
                 <button
                   type="button"
@@ -129,7 +126,7 @@ export function CartSheet({ open, onOpenChange, cart }: CartSheetProps) {
 
           {!canCheckout && (
             <p className="text-center text-xs text-muted-foreground">
-              Toque em &quot;Carrinho&quot; nos produtos da vitrine para montar seu pedido.
+              Toque nos produtos da vitrine para adicionar ao pedido.
             </p>
           )}
         </div>

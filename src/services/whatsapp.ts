@@ -13,20 +13,20 @@ export const whatsappProductUrl = (productName: string, price: number) => {
 
 export const whatsappCartUrl = (items: CartItem[]) => {
   const lines = items.map(
-    (item) => `• ${item.name} x${item.quantity} — ${formatBRL(item.price * item.quantity)}`,
+    (item) => `• ${item.name} — ${item.quantity}x — ${formatBRL(item.price * item.quantity)}`,
   );
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const message = encodeURIComponent(
     [
-      `Olá ${STORE.name}! Gostaria de fazer um pedido para delivery:`,
+      `Olá, ${STORE.name}! Quero fazer um pedido:`,
       "",
       ...lines,
       "",
-      `*Total: ${formatBRL(total)}*`,
+      `Subtotal: ${formatBRL(total)}`,
       "",
-      "Endereço de entrega: ",
-      "Forma de pagamento: ",
+      "Endereço para entrega: ",
+      "Forma de pagamento: Pix / Dinheiro / Cartão na entrega",
     ].join("\n"),
   );
 

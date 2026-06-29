@@ -7,11 +7,13 @@ import {
   Star,
   MessageCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { BrandLogo } from "@/components/mercadinho/BrandLogo";
 import { CartSheet } from "@/components/mercadinho/CartSheet";
 import { InstallPwaBanner } from "@/components/mercadinho/InstallPwaBanner";
 import { MobileBottomNav } from "@/components/mercadinho/MobileBottomNav";
+import { ProductDetailDialog } from "@/components/mercadinho/ProductDetailDialog";
 import { ProductCard, ProductCardSkeleton } from "@/components/mercadinho/ProductCard";
 import { STORE } from "@/config/store";
 import { ALL_CATEGORY_IMAGE, BANNERS, CATEGORIES, REVIEWS } from "@/data/catalog";
@@ -29,8 +31,33 @@ interface Props {
 export function PublicPage({ products, isLoading = false, cart, onAdminClick }: Props) {
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
 
   const filtered = activeCat ? products.filter((product) => product.category === activeCat) : products;
+
+  const handleAddToCart = useCallback(
+    (product: Product) => {
+      const previousQty = cart.items.find((item) => item.productId === product.id)?.quantity ?? 0;
+      cart.addItem(product);
+
+      toast.success(`${product.name} adicionado`, {
+        description: "Abra Pedidos para revisar e enviar no WhatsApp.",
+        action: {
+          label: "Desfazer",
+          onClick: () => {
+            if (previousQty === 0) cart.removeItem(product.id);
+            else cart.updateQuantity(product.id, previousQty);
+          },
+        },
+      });
+    },
+    [cart],
+  );
+
+  const getCartQuantity = useCallback(
+    (productId: string) => cart.items.find((item) => item.productId === productId)?.quantity ?? 0,
+    [cart.items],
+  );
 
   return (
     <div className="min-h-[100dvh] bg-background pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
@@ -129,10 +156,9 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={(item) => {
-                    cart.addItem(item);
-                    setCartOpen(true);
-                  }}
+                  cartQuantity={getCartQuantity(product.id)}
+                  onAddToCart={handleAddToCart}
+                  onShowDetails={setDetailProduct}
                 />
               ))}
             </div>
@@ -213,6 +239,15 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
       </a>
 
       <CartSheet open={cartOpen} onOpenChange={setCartOpen} cart={cart} />
+
+      <ProductDetailDialog
+        product={detailProduct}
+        open={detailProduct !== null}
+        onOpenChange={(open) => {
+          if (!open) setDetailProduct(null);
+        }}
+        onAddToCart={handleAddToCart}
+      />
     </div>
   );
 }

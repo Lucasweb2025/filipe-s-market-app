@@ -1,10 +1,16 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Mercadinho do Leblon
+
+Aplicação SaaS de comércio local com vitrine de ofertas, carrinho de delivery e pedidos via WhatsApp.
+
+## Arquitetura (MVC)
+
+- **Model:** `src/models/` — tipos de domínio (`Product`, `CartItem`)
+- **Data:** `src/data/` — seed estático (será substituído por Firestore)
+- **Services:** `src/services/` — WhatsApp, repositório de produtos
+- **Controller:** `src/hooks/` + `src/providers/` — estado centralizado
+- **View:** `src/components/mercadinho/` — UI pública e admin
+
+## Próximos passos
+
+- Integrar Firebase Firestore para produtos dinâmicos
+- Integrar Firebase Storage para upload de imagens no painel admin (usar `compressedImage.file` de `image-compression.ts`)

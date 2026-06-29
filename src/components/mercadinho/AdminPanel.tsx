@@ -1,15 +1,22 @@
-import { useRef, useState } from "react";
-import { ArrowLeft, ImagePlus, LogOut, Lock, Mail, Plus, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ImagePlus, Loader2, LogOut, Lock, Mail, Plus, Trash2 } from "lucide-react";
+import { CATEGORIES } from "@/data/catalog";
+import { useStaleGuard } from "@/hooks/use-stale-guard";
+import { createFileFingerprint } from "@/lib/file-fingerprint";
+import type { Category, Product, ProductInput } from "@/models/product";
 import {
-  CATEGORIES,
-  formatBRL,
-  type Category,
-  type Product,
-} from "@/lib/mercadinho-data";
+  compressImageForUpload,
+  fileToDataUrl,
+  formatFileSize,
+  revokeCompressedImagePreview,
+  type CompressedImage,
+} from "@/services/image-compression";
+import { formatBRL } from "@/services/whatsapp";
+import { STORE } from "@/config/store";
 
 interface Props {
   products: Product[];
-  onAdd: (p: Omit<Product, "id">) => void;
+  onAdd: (p: ProductInput) => void;
   onDelete: (id: string) => void;
   onBack: () => void;
 }
@@ -51,7 +58,7 @@ function LoginScreen({ onBack, onSuccess }: { onBack: () => void; onSuccess: () 
               <Lock className="h-6 w-6 text-primary-foreground" />
             </div>
             <h1 className="mt-4 text-xl font-bold tracking-tight">Acesso Restrito</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Painel do Felipe</p>
+            <p className="mt-1 text-sm text-muted-foreground">{STORE.name}</p>
           </div>
           <form
             onSubmit={(e) => {
@@ -113,7 +120,7 @@ function Dashboard({
   onLogout,
 }: {
   products: Product[];
-  onAdd: (p: Omit<Product, "id">) => void;
+  onAdd: (p: ProductInput) => void;
   onDelete: (id: string) => void;
   onLogout: () => void;
 }) {
@@ -121,31 +128,96 @@ function Dashboard({
   const [category, setCategory] = useState<Category>("Hortifrúti");
   const [oldPrice, setOldPrice] = useState("");
   const [newPrice, setNewPrice] = useState("");
-  const [image, setImage] = useState<string>("");
+  const [compressedImage, setCompressedImage] = useState<CompressedImage | null>(null);
+  const [imageDataUrl, setImageDataUrl] = useState("");
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const compressedImageRef = useRef<CompressedImage | null>(null);
+  const lastFingerprintRef = useRef<string | null>(null);
+  const { nextGeneration, isStale } = useStaleGuard();
 
-  const handleFile = (file?: File) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImage(String(reader.result));
-    reader.readAsDataURL(file);
+  compressedImageRef.current = compressedImage;
+
+  useEffect(() => {
+    return () => revokeCompressedImagePreview(compressedImageRef.current);
+  }, []);
+
+  const resetImage = () => {
+    revokeCompressedImagePreview(compressedImage);
+    setCompressedImage(null);
+    setImageDataUrl("");
+    setImageError(null);
+    lastFingerprintRef.current = null;
+    if (fileRef.current) fileRef.current.value = "";
   };
 
-  const submit = (e: React.FormEvent) => {
+  const handleFile = async (file?: File) => {
+    if (!file || isCompressing || isSubmitting) return;
+
+    const fingerprint = createFileFingerprint(file);
+    if (fingerprint === lastFingerprintRef.current && compressedImage) return;
+
+    const generation = nextGeneration();
+    setImageError(null);
+    setIsCompressing(true);
+
+    try {
+      revokeCompressedImagePreview(compressedImage);
+      const result = await compressImageForUpload(file);
+      if (isStale(generation)) {
+        revokeCompressedImagePreview(result);
+        return;
+      }
+
+      const dataUrl = await fileToDataUrl(result.file);
+      if (isStale(generation)) {
+        revokeCompressedImagePreview(result);
+        return;
+      }
+
+      lastFingerprintRef.current = fingerprint;
+      setCompressedImage(result);
+      setImageDataUrl(dataUrl);
+    } catch (error) {
+      resetImage();
+      setImageError(error instanceof Error ? error.message : "Erro ao processar a imagem.");
+    } finally {
+      if (!isStale(generation)) {
+        setIsCompressing(false);
+      }
+    }
+  };
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !newPrice) return;
-    onAdd({
-      name,
-      category,
-      oldPrice: parseFloat(oldPrice) || parseFloat(newPrice) * 1.2,
-      newPrice: parseFloat(newPrice),
-      image: image || "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80",
-    });
-    setName("");
-    setOldPrice("");
-    setNewPrice("");
-    setImage("");
-    if (fileRef.current) fileRef.current.value = "";
+    if (!name || !newPrice || isSubmitting || isCompressing) return;
+
+    const generation = nextGeneration();
+    setIsSubmitting(true);
+    try {
+      onAdd({
+        name,
+        category,
+        oldPrice: parseFloat(oldPrice) || parseFloat(newPrice) * 1.2,
+        newPrice: parseFloat(newPrice),
+        image:
+          imageDataUrl ||
+          "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80",
+      });
+
+      if (isStale(generation)) return;
+
+      setName("");
+      setOldPrice("");
+      setNewPrice("");
+      resetImage();
+    } finally {
+      if (!isStale(generation)) {
+        setIsSubmitting(false);
+      }
+    }
   };
 
   return (
@@ -154,7 +226,7 @@ function Dashboard({
         <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-4 sm:px-6">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Painel administrativo</p>
-            <h1 className="truncate text-lg font-bold tracking-tight">Olá, Felipe 👋</h1>
+            <h1 className="truncate text-lg font-bold tracking-tight">Gestão da loja 👋</h1>
           </div>
           <button
             onClick={onLogout}
@@ -177,7 +249,7 @@ function Dashboard({
           <section className="rounded-3xl bg-card p-6 shadow-soft lg:col-span-2">
             <h2 className="text-base font-bold tracking-tight">Cadastrar nova oferta</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Aparece imediatamente na vitrine do cliente.
+              Aparece imediatamente na vitrine. Fotos são compactadas automaticamente antes do envio.
             </p>
 
             <form onSubmit={submit} className="mt-5 space-y-3">
@@ -205,11 +277,21 @@ function Dashboard({
                 <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">Imagem</label>
                 <button
                   type="button"
+                  disabled={isCompressing}
                   onClick={() => fileRef.current?.click()}
-                  className="relative grid h-40 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-input transition hover:border-primary hover:bg-secondary"
+                  className="relative grid h-40 w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-input transition hover:border-primary hover:bg-secondary disabled:cursor-wait disabled:opacity-70"
                 >
-                  {image ? (
-                    <img src={image} alt="Pré-visualização" className="h-full w-full object-cover" />
+                  {isCompressing ? (
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-6 w-6 animate-spin" />
+                      <span className="text-xs font-medium">Compactando foto...</span>
+                    </div>
+                  ) : compressedImage ? (
+                    <img
+                      src={compressedImage.previewUrl}
+                      alt="Pré-visualização"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
                       <ImagePlus className="h-6 w-6" />
@@ -217,18 +299,30 @@ function Dashboard({
                     </div>
                   )}
                 </button>
+                {compressedImage && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {formatFileSize(compressedImage.originalSize)} →{" "}
+                    <span className="font-semibold text-primary">
+                      {formatFileSize(compressedImage.compressedSize)}
+                    </span>{" "}
+                    · {compressedImage.width}×{compressedImage.height}px
+                  </p>
+                )}
+                {imageError && <p className="mt-2 text-xs text-destructive">{imageError}</p>}
                 <input
                   ref={fileRef}
                   type="file"
                   accept="image/*"
+                  capture="environment"
                   className="hidden"
-                  onChange={(e) => handleFile(e.target.files?.[0])}
+                  onChange={(e) => void handleFile(e.target.files?.[0])}
                 />
               </div>
 
               <button
                 type="submit"
-                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition hover:opacity-95"
+                disabled={isCompressing || isSubmitting}
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-glow transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Plus className="h-4 w-4" /> Adicionar à vitrine
               </button>

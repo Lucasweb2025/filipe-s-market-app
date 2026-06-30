@@ -1,24 +1,26 @@
 import { useCallback, useMemo, useState } from "react";
-import type { CartItem, Product } from "@/models/product";
+import type { CartItem, CartLineInput } from "@/models/product";
+
+const FALLBACK_IMAGE = "";
 
 export function useCart() {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const addItem = useCallback((product: Product) => {
+  const addLine = useCallback((line: CartLineInput) => {
     setItems((current) => {
-      const existing = current.find((item) => item.productId === product.id);
+      const existing = current.find((item) => item.productId === line.productId);
       if (existing) {
         return current.map((item) =>
-          item.productId === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+          item.productId === line.productId ? { ...item, quantity: item.quantity + 1 } : item,
         );
       }
       return [
         ...current,
         {
-          productId: product.id,
-          name: product.name,
-          price: product.newPrice,
-          image: product.image,
+          productId: line.productId,
+          name: line.name,
+          price: line.price,
+          image: line.image ?? FALLBACK_IMAGE,
           quantity: 1,
         },
       ];
@@ -56,12 +58,12 @@ export function useCart() {
       items,
       itemCount,
       total,
-      addItem,
+      addLine,
       removeItem,
       updateQuantity,
       clearCart,
     }),
-    [items, itemCount, total, addItem, removeItem, updateQuantity, clearCart],
+    [items, itemCount, total, addLine, removeItem, updateQuantity, clearCart],
   );
 }
 

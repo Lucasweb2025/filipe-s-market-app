@@ -7,46 +7,83 @@ import {
   Star,
   MessageCircle,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BrandLogo } from "@/components/mercadinho/BrandLogo";
 import { CartSheet } from "@/components/mercadinho/CartSheet";
+import { CatalogListRow } from "@/components/mercadinho/CatalogListRow";
+import { GenericPickerCard } from "@/components/mercadinho/GenericPickerCard";
 import { InstallPwaBanner } from "@/components/mercadinho/InstallPwaBanner";
 import { MobileBottomNav } from "@/components/mercadinho/MobileBottomNav";
 import { ProductDetailDialog } from "@/components/mercadinho/ProductDetailDialog";
 import { ProductCard, ProductCardSkeleton } from "@/components/mercadinho/ProductCard";
+import { VariantPickerDialog } from "@/components/mercadinho/VariantPickerDialog";
 import { STORE } from "@/config/store";
-import { ALL_CATEGORY_IMAGE, BANNERS, CATEGORIES, REVIEWS } from "@/data/catalog";
+import {
+  ALL_CATEGORY_IMAGE,
+  BANNERS,
+  CATEGORIES,
+  CATEGORY_IMAGES,
+  INITIAL_CATALOG,
+  REVIEWS,
+} from "@/data/catalog";
 import type { Cart } from "@/hooks/use-cart";
-import type { Product } from "@/models/product";
+import { toCartLine } from "@/lib/catalog";
+import type { CartLineInput, CatalogItem, Category, ProductVariant } from "@/models/product";
 import { whatsappContactUrl } from "@/services/whatsapp";
 
 interface Props {
-  products: Product[];
   isLoading?: boolean;
   cart: Cart;
   onAdminClick: () => void;
 }
 
-export function PublicPage({ products, isLoading = false, cart, onAdminClick }: Props) {
-  const [activeCat, setActiveCat] = useState<string | null>(null);
+export function PublicPage({ isLoading = false, cart, onAdminClick }: Props) {
+  const [activeCat, setActiveCat] = useState<Category | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
-  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
+  const [detailItem, setDetailItem] = useState<CatalogItem | null>(null);
+  const [pickerItem, setPickerItem] = useState<CatalogItem | null>(null);
 
-  const filtered = activeCat ? products.filter((product) => product.category === activeCat) : products;
+  const filteredCatalog = useMemo(
+    () =>
+      activeCat ? INITIAL_CATALOG.filter((item) => item.category === activeCat) : INITIAL_CATALOG,
+    [activeCat],
+  );
 
-  const handleAddToCart = useCallback(
-    (product: Product) => {
-      const previousQty = cart.items.find((item) => item.productId === product.id)?.quantity ?? 0;
-      cart.addItem(product);
+  const featuredItems = useMemo(
+    () => filteredCatalog.filter((item) => item.display === "featured"),
+    [filteredCatalog],
+  );
 
-      toast.success(`${product.name} adicionado`, {
+  const pickerItems = useMemo(
+    () => filteredCatalog.filter((item) => item.display === "picker"),
+    [filteredCatalog],
+  );
+
+  const listItems = useMemo(
+    () => filteredCatalog.filter((item) => item.display === "list"),
+    [filteredCatalog],
+  );
+
+  const listByCategory = useMemo(() => {
+    const categories = activeCat ? CATEGORIES.filter((cat) => cat.name === activeCat) : CATEGORIES;
+    return categories
+      .map((category) => ({
+        name: category.name,
+        items: listItems.filter((item) => item.category === category.name),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [activeCat, listItems]);
+
+  const notifyAdded = useCallback(
+    (lineName: string, productId: string, previousQty: number) => {
+      toast.success(`${lineName} adicionado`, {
         description: "Abra Pedidos para revisar e enviar no WhatsApp.",
         action: {
           label: "Desfazer",
           onClick: () => {
-            if (previousQty === 0) cart.removeItem(product.id);
-            else cart.updateQuantity(product.id, previousQty);
+            if (previousQty === 0) cart.removeItem(productId);
+            else cart.updateQuantity(productId, previousQty);
           },
         },
       });
@@ -54,10 +91,28 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
     [cart],
   );
 
+  const handleAddLine = useCallback(
+    (line: CartLineInput) => {
+      const previousQty = cart.items.find((item) => item.productId === line.productId)?.quantity ?? 0;
+      cart.addLine(line);
+      notifyAdded(line.name, line.productId, previousQty);
+    },
+    [cart, notifyAdded],
+  );
+
+  const handleAddCatalogItem = useCallback(
+    (item: CatalogItem, variant?: ProductVariant) => {
+      handleAddLine(toCartLine(item, CATEGORY_IMAGES, variant));
+    },
+    [handleAddLine],
+  );
+
   const getCartQuantity = useCallback(
     (productId: string) => cart.items.find((item) => item.productId === productId)?.quantity ?? 0,
     [cart.items],
   );
+
+  const hasCatalogContent = featuredItems.length > 0 || pickerItems.length > 0 || listItems.length > 0;
 
   return (
     <div className="min-h-[100dvh] bg-background pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
@@ -66,7 +121,7 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
           <BrandLogo size="md" className="rounded-xl bg-white/80 p-1 shadow-soft" />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-sm font-bold tracking-tight sm:text-lg">{STORE.name}</h1>
-            <p className="truncate text-[11px] text-muted-foreground sm:text-xs">Jardim São Roque · SP</p>
+            <p className="truncate text-[11px] text-muted-foreground sm:text-xs">Vila Franca · SP</p>
           </div>
           <button
             onClick={onAdminClick}
@@ -129,41 +184,94 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
           </div>
         </section>
 
-        <section className="mt-8">
-          <div className="mb-4 flex items-end justify-between">
-            <div>
-              <h2 className="text-lg font-bold tracking-tight">Ofertas da Semana</h2>
-              <p className="text-sm text-muted-foreground">
-                {isLoading
-                  ? "Carregando vitrine..."
-                  : `${filtered.length} ${filtered.length === 1 ? "produto" : "produtos"}`}
-              </p>
-            </div>
-          </div>
-          {isLoading ? (
+        {isLoading ? (
+          <section className="mt-8">
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <ProductCardSkeleton key={index} />
               ))}
             </div>
-          ) : filtered.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
-              Nenhum produto nesta categoria ainda.
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {filtered.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  cartQuantity={getCartQuantity(product.id)}
-                  onAddToCart={handleAddToCart}
-                  onShowDetails={setDetailProduct}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+          </section>
+        ) : !hasCatalogContent ? (
+          <div className="mt-8 rounded-3xl border border-dashed border-border p-10 text-center text-muted-foreground">
+            Nenhum produto nesta categoria ainda.
+          </div>
+        ) : (
+          <>
+            {featuredItems.length > 0 && (
+              <section className="mt-8">
+                <div className="mb-4">
+                  <h2 className="text-lg font-bold tracking-tight">Destaques</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {featuredItems.length} em promoção com foto
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                  {featuredItems.map((item) => (
+                    <ProductCard
+                      key={item.id}
+                      item={item}
+                      categoryImages={CATEGORY_IMAGES}
+                      cartQuantity={getCartQuantity(item.id)}
+                      onAddToCart={handleAddCatalogItem}
+                      onShowDetails={setDetailItem}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {pickerItems.length > 0 && (
+              <section className="mt-10">
+                <div className="mb-4">
+                  <h2 className="text-lg font-bold tracking-tight">Escolha a marca</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Toque para ver marcas e preços disponíveis
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  {pickerItems.map((item) => (
+                    <GenericPickerCard
+                      key={item.id}
+                      item={item}
+                      categoryImages={CATEGORY_IMAGES}
+                      onOpen={setPickerItem}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {listByCategory.length > 0 && (
+              <section className="mt-10 space-y-8">
+                <div>
+                  <h2 className="text-lg font-bold tracking-tight">Catálogo</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {listItems.length} itens · nome, marca e valor
+                  </p>
+                </div>
+                {listByCategory.map((group) => (
+                  <div key={group.name}>
+                    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                      {group.name}
+                    </h3>
+                    <ul className="space-y-2">
+                      {group.items.map((item) => (
+                        <li key={item.id}>
+                          <CatalogListRow
+                            item={item}
+                            cartQuantity={getCartQuantity(item.id)}
+                            onAdd={handleAddCatalogItem}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </section>
+            )}
+          </>
+        )}
 
         <section className="mt-14">
           <div className="mb-6 flex items-center gap-2">
@@ -220,7 +328,7 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
 
         <footer className="mt-16 flex flex-col items-center gap-3 border-t border-border pt-8 pb-4 text-center text-xs text-muted-foreground">
           <BrandLogo size="lg" />
-          <p>© {new Date().getFullYear()} {STORE.name}. Delivery pelo site, atendimento no Jardim São Roque.</p>
+          <p>© {new Date().getFullYear()} {STORE.name}. Delivery pelo site, atendimento na Vila Franca.</p>
         </footer>
       </main>
 
@@ -241,12 +349,23 @@ export function PublicPage({ products, isLoading = false, cart, onAdminClick }: 
       <CartSheet open={cartOpen} onOpenChange={setCartOpen} cart={cart} />
 
       <ProductDetailDialog
-        product={detailProduct}
-        open={detailProduct !== null}
+        item={detailItem}
+        categoryImages={CATEGORY_IMAGES}
+        open={detailItem !== null}
         onOpenChange={(open) => {
-          if (!open) setDetailProduct(null);
+          if (!open) setDetailItem(null);
         }}
-        onAddToCart={handleAddToCart}
+        onAddToCart={handleAddCatalogItem}
+      />
+
+      <VariantPickerDialog
+        item={pickerItem}
+        categoryImages={CATEGORY_IMAGES}
+        open={pickerItem !== null}
+        onOpenChange={(open) => {
+          if (!open) setPickerItem(null);
+        }}
+        onSelectVariant={handleAddCatalogItem}
       />
     </div>
   );

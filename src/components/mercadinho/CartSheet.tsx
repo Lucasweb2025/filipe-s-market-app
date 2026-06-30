@@ -7,6 +7,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { CartEmptyState } from "@/components/mercadinho/ProductCard";
+import { CATEGORY_IMAGES } from "@/data/catalog";
 import { STORE } from "@/config/store";
 import type { Cart } from "@/hooks/use-cart";
 import { formatBRL, whatsappCartUrl } from "@/services/whatsapp";
@@ -46,9 +47,9 @@ export function CartSheet({ open, onOpenChange, cart }: CartSheetProps) {
                     className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-card p-3 shadow-soft"
                   >
                     <img
-                      src={item.image}
+                      src={item.image || CATEGORY_IMAGES.Mercearia}
                       alt={item.name}
-                      className="h-14 w-14 shrink-0 rounded-2xl object-cover"
+                      className="h-14 w-14 shrink-0 rounded-2xl object-cover bg-muted"
                     />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">{item.name}</p>

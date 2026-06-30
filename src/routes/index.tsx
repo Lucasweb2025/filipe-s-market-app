@@ -8,11 +8,11 @@ import { STORE } from "@/config/store";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${STORE.name} — Jardim São Roque, SP` },
+      { title: `${STORE.name} — Vila Franca, SP` },
       {
         name: "description",
         content:
-          "Mercadinho de bairro no Jardim São Roque com hortifrúti fresquinho, padaria, açougue, bebidas geladas e delivery pelo WhatsApp.",
+          "Mercadinho de bairro na Vila Franca com hortifrúti fresquinho, padaria, açougue, bebidas geladas e delivery pelo WhatsApp.",
       },
       { property: "og:title", content: STORE.name },
       {
@@ -49,7 +49,6 @@ function MercadinhoApp() {
 
   return (
     <PublicPage
-      products={catalog.products}
       isLoading={catalog.isLoading}
       cart={cart}
       onAdminClick={() => setView("admin")}
